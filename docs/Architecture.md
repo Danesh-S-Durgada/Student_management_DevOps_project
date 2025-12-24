@@ -1,0 +1,3 @@
+-CI/CD flow
+-AWS components
+-Monitoring tools

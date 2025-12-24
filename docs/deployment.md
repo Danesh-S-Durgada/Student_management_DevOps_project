@@ -1,0 +1,4 @@
+-Terraform setup
+-Jenkins configuration
+-ECR setup
+-Rollback strategy

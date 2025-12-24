@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/Danesh-S-Durgada/Student_management_DevOps_project.git'
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'pytest src/tests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t student-app src/app'
+            }
+        }
+
+        stage('Push to AWS ECR') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region ap-south-1 |
+                docker login --username AWS --password-stdin <AWS_ECR_URL>
+
+                docker tag student-app:latest <AWS_ECR_URL>/student-app:latest
+                docker push <AWS_ECR_URL>/student-app:latest
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'bash scripts/deploy.sh'
+            }
+        }
+    }
+}
