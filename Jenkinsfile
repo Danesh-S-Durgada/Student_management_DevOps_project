@@ -24,26 +24,30 @@ pipeline {
       }
     }
 
-    stage('Build Backend Docker Image (Back_End)') {
+    stage('Build Backend Docker Image') {
       steps {
-        sh '''
-          echo "Using Back_End folder"
-          docker build -t $DOCKER_USER/$BACKEND_IMAGE:$TAG Back_End
-          docker tag $DOCKER_USER/$BACKEND_IMAGE:$TAG $DOCKER_USER/$BACKEND_IMAGE:latest
-        '''
+        dir('backend') {
+          sh '''
+            echo "Using backend folder"
+            docker build -t $DOCKER_USER/$BACKEND_IMAGE:$TAG .
+            docker tag $DOCKER_USER/$BACKEND_IMAGE:$TAG $DOCKER_USER/$BACKEND_IMAGE:latest
+          '''
+        }
       }
     }
 
-    stage('Build Frontend Docker Image (FrontEnd)') {
+    stage('Build Frontend Docker Image') {
       steps {
-        sh '''
-          echo "Using FrontEnd folder"
-          docker build \
-            --build-arg VITE_BACKEND_URL=$BACKEND_SERVICE_URL \
-            -t $DOCKER_USER/$FRONTEND_IMAGE:$TAG FrontEnd
+        dir('frontend') {
+          sh '''
+            echo "Using frontend folder"
+            docker build \
+              --build-arg VITE_BACKEND_URL=$BACKEND_SERVICE_URL \
+              -t $DOCKER_USER/$FRONTEND_IMAGE:$TAG .
 
-          docker tag $DOCKER_USER/$FRONTEND_IMAGE:$TAG $DOCKER_USER/$FRONTEND_IMAGE:latest
-        '''
+            docker tag $DOCKER_USER/$FRONTEND_IMAGE:$TAG $DOCKER_USER/$FRONTEND_IMAGE:latest
+          '''
+        }
       }
     }
 
@@ -75,7 +79,6 @@ pipeline {
           kubectl apply -f k8s/namespace.yaml
 
           kubectl apply -n $K8S_NAMESPACE -f k8s/mongo-secret.yaml
-
           kubectl apply -n $K8S_NAMESPACE -f k8s/
 
           kubectl set image deployment/backend \
