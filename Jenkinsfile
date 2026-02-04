@@ -9,9 +9,7 @@ pipeline {
 
     TAG = "${BUILD_NUMBER}"
 
-    // Internal Kubernetes service URL
     BACKEND_SERVICE_URL = "http://backend-service:5000"
-
     K8S_NAMESPACE = "student-app"
   }
 
@@ -27,10 +25,10 @@ pipeline {
     stage('Build Backend Docker Image') {
       steps {
         dir('backend') {
-          sh '''
-            echo "Using backend folder"
-            docker build -t $DOCKER_USER/$BACKEND_IMAGE:$TAG .
-            docker tag $DOCKER_USER/$BACKEND_IMAGE:$TAG $DOCKER_USER/$BACKEND_IMAGE:latest
+          bat '''
+            echo Using backend folder
+            docker build -t %DOCKER_USER%/%BACKEND_IMAGE%:%TAG% .
+            docker tag %DOCKER_USER%/%BACKEND_IMAGE%:%TAG% %DOCKER_USER%/%BACKEND_IMAGE%:latest
           '''
         }
       }
@@ -39,13 +37,11 @@ pipeline {
     stage('Build Frontend Docker Image') {
       steps {
         dir('frontend') {
-          sh '''
-            echo "Using frontend folder"
-            docker build \
-              --build-arg VITE_BACKEND_URL=$BACKEND_SERVICE_URL \
-              -t $DOCKER_USER/$FRONTEND_IMAGE:$TAG .
-
-            docker tag $DOCKER_USER/$FRONTEND_IMAGE:$TAG $DOCKER_USER/$FRONTEND_IMAGE:latest
+          bat '''
+            echo Using frontend folder
+            docker build --build-arg VITE_BACKEND_URL=%BACKEND_SERVICE_URL% ^
+              -t %DOCKER_USER%/%FRONTEND_IMAGE%:%TAG% .
+            docker tag %DOCKER_USER%/%FRONTEND_IMAGE%:%TAG% %DOCKER_USER%/%FRONTEND_IMAGE%:latest
           '''
         }
       }
@@ -58,14 +54,14 @@ pipeline {
           usernameVariable: 'DOCKER_USERNAME',
           passwordVariable: 'DOCKER_PASSWORD'
         )]) {
-          sh '''
-            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          bat '''
+            echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
 
-            docker push $DOCKER_USER/$BACKEND_IMAGE:$TAG
-            docker push $DOCKER_USER/$BACKEND_IMAGE:latest
+            docker push %DOCKER_USER%/%BACKEND_IMAGE%:%TAG%
+            docker push %DOCKER_USER%/%BACKEND_IMAGE%:latest
 
-            docker push $DOCKER_USER/$FRONTEND_IMAGE:$TAG
-            docker push $DOCKER_USER/$FRONTEND_IMAGE:latest
+            docker push %DOCKER_USER%/%FRONTEND_IMAGE%:%TAG%
+            docker push %DOCKER_USER%/%FRONTEND_IMAGE%:latest
 
             docker logout
           '''
@@ -73,22 +69,34 @@ pipeline {
       }
     }
 
+    stage('Debug Kubernetes Access') {
+      steps {
+        bat '''
+          echo ===== Checking kubectl =====
+          kubectl version --client
+
+          echo ===== Current Context =====
+          kubectl config current-context
+
+          echo ===== Nodes =====
+          kubectl get nodes
+        '''
+      }
+    }
+
     stage('Deploy to Kubernetes') {
       steps {
-        sh '''
-          kubectl apply -f k8s/namespace.yaml
+        bat '''
+          kubectl apply -f k8s\\namespace.yaml
 
-          kubectl apply -n $K8S_NAMESPACE -f k8s/mongo-secret.yaml
-          kubectl apply -n $K8S_NAMESPACE -f k8s/
+          kubectl apply -n %K8S_NAMESPACE% -f k8s\\mongo-secret.yaml
+          kubectl apply -n %K8S_NAMESPACE% -f k8s\\
 
-          kubectl set image deployment/backend \
-            backend=$DOCKER_USER/$BACKEND_IMAGE:$TAG -n $K8S_NAMESPACE
+          kubectl set image deployment/backend backend=%DOCKER_USER%/%BACKEND_IMAGE%:%TAG% -n %K8S_NAMESPACE%
+          kubectl set image deployment/frontend frontend=%DOCKER_USER%/%FRONTEND_IMAGE%:%TAG% -n %K8S_NAMESPACE%
 
-          kubectl set image deployment/frontend \
-            frontend=$DOCKER_USER/$FRONTEND_IMAGE:$TAG -n $K8S_NAMESPACE
-
-          kubectl rollout status deployment/backend -n $K8S_NAMESPACE
-          kubectl rollout status deployment/frontend -n $K8S_NAMESPACE
+          kubectl rollout status deployment/backend -n %K8S_NAMESPACE%
+          kubectl rollout status deployment/frontend -n %K8S_NAMESPACE%
         '''
       }
     }
@@ -98,13 +106,11 @@ pipeline {
     success {
       echo "✅ CI/CD Pipeline completed successfully"
     }
-
     failure {
       echo "❌ CI/CD Pipeline failed"
     }
-
     always {
-      sh 'docker image prune -f'
+      bat 'docker image prune -f'
     }
   }
 }
