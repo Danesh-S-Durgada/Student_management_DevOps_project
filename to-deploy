@@ -1,0 +1,7 @@
+Apply everything with one command:
+
+kubectl apply -k k8s/
+
+This will deploy backend, frontend, HPA, Services, and secret in one go.
+
+If you update any file later (like image version or replicas), just rerun the same command.

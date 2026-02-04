@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: capstone
+  labels:
+    app: frontend
+    env: dev
+    project: capstone
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+      env: dev
+      project: capstone
+  template:
+    metadata:
+      labels:
+        app: frontend
+        env: dev
+        project: capstone
+    spec:
+      containers:
+        - name: frontend
+          image: daneshsd2002/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"

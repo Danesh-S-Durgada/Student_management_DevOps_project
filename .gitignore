@@ -1,0 +1,101 @@
+# =========================
+# Node.js
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+*.pem
+*.key
+
+# =========================
+# Docker
+# =========================
+*.tar
+docker-compose.override.yml
+
+# =========================
+# Terraform (VERY IMPORTANT)
+# =========================
+Terraform/.terraform/
+Terraform/*.tfstate
+Terraform/*.tfstate.*
+Terraform/terraform.tfvars
+
+# =========================
+# Kubernetes Secrets
+# =========================
+k8s/*secret*.yaml
+
+# =========================
+# Jenkins
+# =========================
+ci-cd pipeline/.jenkins/
+
+# =========================
+# OS / Editor
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# =========================
+# Node.js
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Frontend Build
+# =========================
+dist/
+dist-ssr/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+*.pem
+*.key
+
+# =========================
+# Docker
+# =========================
+*.tar
+docker-compose.override.yml
+
+# =========================
+# Terraform (VERY IMPORTANT)
+# =========================
+Terraform/.terraform/
+Terraform/*.tfstate
+Terraform/*.tfstate.*
+Terraform/*.auto.tfvars
+Terraform/*secret*.tfvars
+
+# =========================
+# Kubernetes Secrets
+# =========================
+k8s/*secret*.yaml
+
+# =========================
+# Jenkins
+# =========================
+jenkins_home/
+
+# =========================
+# OS / Editor
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
